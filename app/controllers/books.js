@@ -3,7 +3,7 @@ let BookModel = require('../models/books');
 module.exports.getBook = async function (req, res, next) {
   try {
     // Find one using the id sent in the parameter of the request
-    let book = await BookModel.findOne({ _id: req.params.bookId });
+    let book = await BookModel.findOne({ _id: req.params.id }); // Changed from req.params.bookId to req.params.id
 
     res.json(book);
 
@@ -54,55 +54,50 @@ module.exports.getAll = async function (req, res, next) {
 
 module.exports.update = async function (req, res, next) {
   try {
-    // Get input from the request
-    let updatedBook = BookModel(req.body);
-    updatedBook._id = req.params.bookId;
+    const id = req.params.bookId;
 
-    // Submit the change
-    let result = await BookModel.updateOne({ _id: req.params.bookId });
+    // Perform the update
+    let result = await BookModel.updateOne(
+      { _id: id },
+      { $set: req.body }
+    );
+
     console.log("Result: ", result);
 
-    // Handle the result: send a response.
     if (result.modifiedCount > 0) {
-      res.status(200);
-      res.json(
-        {
-          success: true,
-          message: "Book updated successfully."
-        }
-      );
+      res.status(200).json({
+        success: true,
+        message: "Book updated successfully."
+      });
     } else {
-      throw new Error('Book not updated. Are you sure it exists?')
+      throw new Error('Book not updated. Are you sure it exists?');
     }
 
   } catch (error) {
     console.log(error);
     next(error);
   }
-}
+};
 
 
 module.exports.remove = async function (req, res, next) {
   try {
-    // Delete  using the id sent in the parameter of the request
-    let result = await BookModel.deleteOne({ _id: req.params.id });
+    const id = req.params.bookId; // FIXED: match router param
+
+    let result = await BookModel.deleteOne({ _id: id });
     console.log("Result: ", result);
 
-    // Handle the result and send a response
     if (result.deletedCount > 0) {
-      res.status(200);
-      res.json(
-        {
-          success: true,
-          message: "Book deleted successfully."
-        }
-      );
+      res.status(200).json({
+        success: true,
+        message: "Book deleted successfully."
+      });
     } else {
-      throw new Error('Book not deleted. Are you sure it exists?')
+      throw new Error('Book not deleted. Are you sure it exists?');
     }
 
   } catch (error) {
     console.log(error);
     next(error);
   }
-}
+};
